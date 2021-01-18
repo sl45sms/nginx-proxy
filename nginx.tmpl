@@ -4,7 +4,10 @@
 {{ $external_https_port := coalesce $.Env.HTTPS_PORT "443" }}
 
 {{ define "upstream" }}
-	{{ if .Address }}
+  {{ if and .IP .Port }}
+    # {{ .Container.Name }} with manually set IP
+    server {{ .IP }}:{{ .Port }};
+	{{ else if .Address }}
 		{{/* If we got the containers from swarm and this container's port is published to host, use host IP:PORT */}}
 		{{ if and .Container.Node.ID .Address.HostPort }}
 			# {{ .Container.Node.Name }}/{{ .Container.Name }}
@@ -22,7 +25,6 @@
 			server 127.0.0.1 down;
 		{{ end }}
 	{{ end }}
-
 {{ end }}
 
 {{ define "ssl_policy" }}
